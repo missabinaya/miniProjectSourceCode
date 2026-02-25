@@ -9,7 +9,9 @@ struct clientData
     unsigned int acctNum; // account number
     char lastName[15];    // account last name
     char firstName[10];   // account first name
-    double balance;       // account balance
+    double balance;      //account balance
+    unsigned int Opin;  //account original pin number
+    unsigned int Epin; //Entered  pin   
 };                        // end structure clientData
 
 // prototypes
@@ -18,6 +20,7 @@ void textFile(FILE *readPtr);
 void updateRecord(FILE *fPtr);
 void newRecord(FILE *fPtr);
 void deleteRecord(FILE *fPtr);
+int authenticate(struct clientData client);
 
 int main(int argc, char *argv[])
 {
@@ -114,6 +117,13 @@ void updateRecord(FILE *fPtr)
     // read record from file
     fread(&client, sizeof(struct clientData), 1, fPtr);
     // display error if account does not exist
+    if (client.acctNum != 0)
+{
+    if (!authenticate(client))
+    {
+        return;  // stop if wrong PIN
+    }
+}
     if (client.acctNum == 0)
     {
         printf("Account #%d has no information.\n", account);
@@ -131,7 +141,7 @@ void updateRecord(FILE *fPtr)
 
         // move file pointer to correct record in file
         // move back by 1 record length
-        fseek(fPtr, -sizeof(struct clientData), SEEK_CUR);
+        fseek(fPtr, sizeof(struct clientData), SEEK_CUR);
         // write updated record over old record in file
         fwrite(&client, sizeof(struct clientData), 1, fPtr);
     } // end else
@@ -166,6 +176,32 @@ void deleteRecord(FILE *fPtr)
     } // end else
 } // end function deleteRecord
 
+int authenticate(struct clientData client)
+{
+    unsigned int enteredPin;
+    int attempts = 0;
+
+    while (attempts < 3)
+    {
+        printf("Enter your PIN: ");
+        scanf("%u", &enteredPin);
+
+        if (enteredPin == client.Opin)
+        {
+            printf("Access Granted\n");
+            return 1;
+        }
+        else
+        {
+            printf("Incorrect PIN\n");
+            attempts++;
+        }
+    }
+
+    printf("Too many failed attempts. Access denied.\n");
+    return 0;
+}
+
 // create and insert record
 void newRecord(FILE *fPtr)
 {
@@ -191,6 +227,8 @@ void newRecord(FILE *fPtr)
         // user enters last name, first name and balance
         printf("%s", "Enter lastname, firstname, balance\n? ");
         scanf("%14s%9s%lf", client.lastName, client.firstName, &client.balance);
+        printf("Set 4-digit PIN: ");
+        scanf("%u", &client.Opin);
 
         client.acctNum = accountNum;
         // move file pointer to correct record in file
