@@ -11,9 +11,11 @@ struct clientData
     char firstName[10];   // account first name
     double balance;      //account balance
     unsigned int Opin;  //account original pin number
-    unsigned int Epin; //Entered  pin   
+    unsigned int Epin; //Entered  pin
+    int transactionCount;   
+   
 };                        // end structure clientData
-
+  
 // prototypes
 unsigned int enterChoice(void);
 void textFile(FILE *readPtr);
@@ -21,7 +23,7 @@ void updateRecord(FILE *fPtr);
 void newRecord(FILE *fPtr);
 void deleteRecord(FILE *fPtr);
 int authenticate(struct clientData client);
-
+ void saveTransaction(struct clientData client, double amount);
 int main(int argc, char *argv[])
 {
     FILE *cfPtr;         // credit.dat file pointer
@@ -65,6 +67,28 @@ int main(int argc, char *argv[])
     fclose(cfPtr); // fclose closes the file
 } // end main
 
+void saveTransaction(struct clientData client, double amount)
+{
+    FILE *logFile;
+
+    logFile = fopen("transactions.txt", "a");
+
+    if (logFile == NULL)
+    {
+        printf("Transaction file could not be opened.\n");
+        return;
+    }
+
+    fprintf(logFile,
+            "Account No: %u | Name: %s %s | Amount: %.2f | Balance: %.2f\n",
+            client.acctNum,
+            client.firstName,
+            client.lastName,
+            amount,
+            client.balance);
+
+    fclose(logFile);
+}
 // create formatted text file for printing
 void textFile(FILE *readPtr)
 {
@@ -136,7 +160,7 @@ void updateRecord(FILE *fPtr)
         printf("%s", "Enter charge ( + ) or payment ( - ): ");
         scanf("%lf", &transaction);
         client.balance += transaction; // update record balance
-
+        saveTransaction(client, transaction);
         printf("%-6d%-16s%-11s%10.2f\n", client.acctNum, client.lastName, client.firstName, client.balance);
 
         // move file pointer to correct record in file
