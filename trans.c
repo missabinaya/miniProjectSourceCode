@@ -160,6 +160,11 @@ void updateRecord(FILE *fPtr)
         printf("%s", "Enter charge ( + ) or payment ( - ): ");
         scanf("%lf", &transaction);
         client.balance += transaction; // update record balance
+        if (client.balance < 500)
+{
+    printf("\n⚠ Warning: Low Balance!\n");
+    printf("Minimum balance should be maintained.\n");
+}
         saveTransaction(client, transaction);
         printf("%-6d%-16s%-11s%10.2f\n", client.acctNum, client.lastName, client.firstName, client.balance);
 
