@@ -164,6 +164,11 @@ void updateRecord(FILE *fPtr)
         // request transaction amount from user
         printf("%s", "Enter charge ( + ) or payment ( - ): ");
         scanf("%lf", &transaction);
+        if (transaction < -10000)
+{
+    printf("Withdrawal limit exceeded!\n");
+    return;
+}
         client.balance += transaction; // update record balance
         if (client.balance < 500)
 {
