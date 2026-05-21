@@ -3,6 +3,7 @@
 // be placed in the file, and deletes data previously in the file.
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 // clientData structure definition
 struct clientData
 {
@@ -24,6 +25,7 @@ void newRecord(FILE *fPtr);
 void deleteRecord(FILE *fPtr);
 int authenticate(struct clientData client);
  void saveTransaction(struct clientData client, double amount);
+ void searchRecord(FILE *fPtr);
 int main(int argc, char *argv[])
 {
     FILE *cfPtr;         // credit.dat file pointer
@@ -37,7 +39,7 @@ int main(int argc, char *argv[])
     }
 
     // enable user to specify action
-    while ((choice = enterChoice()) != 5)
+    while ((choice = enterChoice()) != 6)
     {
         switch (choice)
         {
@@ -58,6 +60,9 @@ int main(int argc, char *argv[])
             deleteRecord(cfPtr);
             break;
         // display if user does not select valid choice
+        case 5:
+    searchRecord(cfPtr);
+    break;
         default:
             puts("Incorrect choice");
             break;
@@ -205,6 +210,39 @@ void deleteRecord(FILE *fPtr)
     } // end else
 } // end function deleteRecord
 
+void searchRecord(FILE *fPtr)
+{
+    struct clientData client = {0, "", "", 0.0};
+    char searchName[15];
+    int found = 0;
+
+    printf("Enter last name to search: ");
+    scanf("%14s", searchName);
+
+    rewind(fPtr);
+
+    while (fread(&client, sizeof(struct clientData), 1, fPtr))
+    {
+        if (strcmp(client.lastName, searchName) == 0)
+        {
+            printf("\nAccount Found:\n");
+
+            printf("%-6d%-16s%-11s%10.2f\n",
+                   client.acctNum,
+                   client.lastName,
+                   client.firstName,
+                   client.balance);
+
+            found = 1;
+        }
+    }
+
+    if (!found)
+    {
+        printf("No account found with that last name.\n");
+    }
+}
+
 int authenticate(struct clientData client)
 {
     unsigned int enteredPin;
@@ -278,7 +316,8 @@ unsigned int enterChoice(void)
                  "2 - update an account\n"
                  "3 - add a new account\n"
                  "4 - delete an account\n"
-                 "5 - end program\n? ");
+                 "5 - search account by last name\n"
+                 "6 - end program\n? ");
 
     scanf("%u", &menuChoice); // receive choice from user
     return menuChoice;
