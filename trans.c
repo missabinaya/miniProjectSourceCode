@@ -26,6 +26,7 @@ void deleteRecord(FILE *fPtr);
 int authenticate(struct clientData client);
  void saveTransaction(struct clientData client, double amount);
  void searchRecord(FILE *fPtr);
+ void checkBalance(FILE *fPtr);
 int main(int argc, char *argv[])
 {
     FILE *cfPtr;         // credit.dat file pointer
@@ -39,7 +40,7 @@ int main(int argc, char *argv[])
     }
 
     // enable user to specify action
-    while ((choice = enterChoice()) != 6)
+    while ((choice = enterChoice()) != 7)
     {
         switch (choice)
         {
@@ -63,6 +64,9 @@ int main(int argc, char *argv[])
         case 5:
     searchRecord(cfPtr);
     break;
+    case 6:
+    checkBalance(cfPtr);
+    break;
         default:
             puts("Incorrect choice");
             break;
@@ -71,6 +75,43 @@ int main(int argc, char *argv[])
 
     fclose(cfPtr); // fclose closes the file
 } // end main
+
+void checkBalance(FILE *fPtr)
+{
+    struct clientData client = {0, "", "", 0.0};
+    unsigned int account;
+
+    printf("Enter account number: ");
+    scanf("%u", &account);
+
+    fseek(fPtr,
+          (account - 1) * sizeof(struct clientData),
+          SEEK_SET);
+
+    fread(&client,
+          sizeof(struct clientData),
+          1,
+          fPtr);
+
+    if (client.acctNum == 0)
+    {
+        printf("Account not found.\n");
+    }
+    else
+    {
+        printf("\n----- Account Details -----\n");
+
+        printf("Account Number : %u\n",
+               client.acctNum);
+
+        printf("Name           : %s %s\n",
+               client.firstName,
+               client.lastName);
+
+        printf("Balance        : %.2f\n",
+               client.balance);
+    }
+}
 
 void saveTransaction(struct clientData client, double amount)
 {
@@ -322,7 +363,8 @@ unsigned int enterChoice(void)
                  "3 - add a new account\n"
                  "4 - delete an account\n"
                  "5 - search account by last name\n"
-                 "6 - end program\n? ");
+                 "6 - check account balance\n"
+                 "7 - end program\n? ");
 
     scanf("%u", &menuChoice); // receive choice from user
     return menuChoice;
